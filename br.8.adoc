@@ -1,0 +1,31 @@
+= br(8)
+:version: v1.4
+:date: 12 April 2024
+:data-uri:
+:doctype: manpage
+:lang: en
+:quirks:
+
+== NAME
+br - become root if user belongs to the allow_groups array
+
+== SYNOPSIS
+*br*  [no arguments]
+
+== DESCRIPTION
+br (become root) gives the user a root shell if the user is part of one of the groups defined in the allowed_groups arrray.
+Be aware that the allowed_groups is defined in the br header file and cannot be modified via a configuration setting.
+
+Therefore, to add or modify the current set you must recompile and create a new RPM package which must be installed as root.
+
+== BUGS
+Feedback is welcome. Report any issue to the Author(s).
+
+== AUTHORS
+Main author is Gratien Dhaese (gdhaese1 at its.jnj.com)
+
+== COPYRIGHT
+(c) 2024
+
+br becomes with absolutely no warranty.
+
