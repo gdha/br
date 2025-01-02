@@ -48,10 +48,9 @@ int main(void) {
     int num_groups;             // Nummer of groups variable
     char user[256];             // Buffer to hold the username
     int result;                 // Contains exit code user lookup
-    // gid_t gid = getgid();       // Get the group ID of the current process
-    struct group grp;           // Group structure to store group details
+    struct group grp = {0};     // Group structure to store group details and zero initialize all fields
     struct group *groupResult;  // Pointer to hold the result of the group lookup
-    char buffer[1024];          // Buffer for additional group information
+    char buffer[4096];          // Buffer for additional group information
 
     // Get the number of groups the user is a member of
     num_groups = getgroups(MAX_GROUP_STRINGS, group_list);
@@ -63,16 +62,13 @@ int main(void) {
 
     // Get the user's login name
     result = getlogin_r(user, sizeof(user));
-    if (result == 0) {
-        // Success: user contains the logged-in user's name
-        // printf("logged in as %s\n", user);
-        ;
-    } else {
+    if (result != 0) {
         // Handle errors
         if (result == ERANGE) {
             fprintf(stderr, "Buffer size is too small for username\n");
         } else {
             perror("getlogin_r");
+            return 1;
         }
     }
 
@@ -83,7 +79,6 @@ int main(void) {
     for (int i = 0; i < num_groups; i++) {
         // Get group entry by its ID
         int ret = getgrgid_r(group_list[i], &grp, buffer, sizeof(buffer), &groupResult);
-        // grp = getgrgid_r(group_list[i]);
         if (ret == 0) {
             if (groupResult == NULL) {
                 // No group found for the given GID
@@ -91,13 +86,12 @@ int main(void) {
             }
         } else {
             // Handle error
-            fprintf(stderr, "Error: %s\n", strerror(ret));
+            perror("getgrgid_r");
+            continue;
         }
 
         // Check if the user is a member (member is an username) of the group
-        char **members = grp.gr_mem;
-
-        while (*members != NULL) {
+        for (char **members = grp.gr_mem; *members != NULL; members++) {
 
             if (strcmp(*members, user) == 0) {
 		// igrp is an integer counter used for the amount of strings in array allowed_groups
@@ -129,11 +123,10 @@ int main(void) {
                     } // end of if (strcmp(grp->gr_name, allowed_groups[igrp])
                 } // end of for (int igrp = 0; igrp < numAllowedGroups; igrp++)
 	    } // end of if (strcmp(*members, user) == 0)
-            members++;
-        }  // of while
+        }  // of for (char **members = grp.gr_mem; *members != NULL; members++)
     } // of for (i = 0; i < num_groups; i++)
 
     // When you at this point the user was not part of the 'wheel' group so we say:
-    perror("Not authorized!");
-    return 0;
+    fprintf(stderr,"Not authorized!\n");
+    return 1;
 }
