@@ -24,7 +24,7 @@ Create Makefile.am
 ```bash
 $ cat Makefile.am
 
-AM_CFLAGS                       = -Wall -O2
+AM_CFLAGS                       = -Wall -Wextra -O2
 
 bin_PROGRAMS                    = br
 br_SOURCES                      = br.c
@@ -48,7 +48,7 @@ $ cat configure.ac
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([br], [1.0], [gdhaese@its.jnj.com])
+AC_INIT([br], [1.0], [gratien.dhaese at gmail.com])
 AC_CONFIG_SRCDIR([br.c])
 AC_CONFIG_HEADERS([config.h])
 
