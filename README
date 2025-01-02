@@ -118,7 +118,7 @@ If not present copy it from ./libltdl/config/install-sh
 
 ```bash
 $ make 
-$ make rpm-sign
+$ make rpm
 ```
 
 ## Bug reports
