@@ -97,6 +97,8 @@ int main(void) {
 
         if (grp.gr_mem == NULL) {
            // Handle the error case
+           free(groupResult);
+           groupResult = NULL; // This will prevent freeing the same memory again
            return 0;
         }
 
