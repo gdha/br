@@ -142,7 +142,6 @@ int main(void) {
     } // of for (i = 0; i < num_groups; i++)
 
     // When you at this point the user was not part of the 'wheel' group so we say:
-    free(groupResult);
     fprintf(stderr,"Not authorized!\n");
     return 1;
 }
