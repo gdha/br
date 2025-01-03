@@ -6,7 +6,7 @@
  * user = your username on the Linux system (most likely non-root) [char]
  * num_groups = the amount of groups the user belongs to [int]
  * numAllowedGroups = amount of groups that allow access to the bash shell with root priveleges [int]
- * member = user account within a certian group
+ * member = user account within a certain group
  * allowed_groups array = list the groups listed in the br.h configuration file
  */
 
@@ -62,6 +62,7 @@ int main(void) {
     num_groups = getgroups(MAX_GROUP_STRINGS, group_list);
 
     if (num_groups == -1) {
+        free(groupResult);
         perror("getgroups");
         return 1;
     }
@@ -97,7 +98,9 @@ int main(void) {
         }
 
         // Check if the user is a member (member is an username) of the group
-        for (char **members = grp.gr_mem; *members != NULL; members++) {
+        char **members = grp.gr_mem;
+
+        while (*members != NULL) {
 
             if (strcmp(*members, user) == 0) {
 		// igrp is an integer counter used for the amount of strings in array allowed_groups
@@ -129,7 +132,8 @@ int main(void) {
                     } // end of if (strcmp(grp->gr_name, allowed_groups[igrp])
                 } // end of for (int igrp = 0; igrp < numAllowedGroups; igrp++)
 	    } // end of if (strcmp(*members, user) == 0)
-        }  // of for (char **members = grp.gr_mem; *members != NULL; members++)
+            members++;
+        }  // of while (*members != NULL)
     } // of for (i = 0; i < num_groups; i++)
 
     // When you at this point the user was not part of the 'wheel' group so we say:
