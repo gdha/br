@@ -9,6 +9,7 @@
 #define MAX_STR_LEN 20         /* Maximum length of each string */
 char allowed_groups[MAX_GROUP_STRINGS][MAX_STR_LEN] = {
 	"wheel",
+	"sudo",
 	""   // Empty string to mark the end of the array
 };
 

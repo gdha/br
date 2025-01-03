@@ -1,0 +1,66 @@
+#!/usr/bin/make -f
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
+
+# to build on debian/ubuntu we need the following package:
+# sudo apt-get install debhelper
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+# This is the debhelper compatibility version to use.
+export DH_COMPAT=5
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+	# noop
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+	# noop
+	dh_clean
+
+# Build architecture-independent files here.
+binary-indep: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	
+	# The DESTDIR Has To Be Exactly debian/br
+	mkdir -vp \
+		debian/br \
+		debian/br/usr/local/sbin
+	
+	
+	# update man page with correct locations
+	install -Dp -m0644 ./br.8 debian/br/usr/share/man/man8/br.8
+	
+	# --- end custom part for installing
+
+	dh_installdeb
+	dh_installdocs README
+	dh_installchangelogs
+	find debian/br -name ".git*" -exec rm {} \;
+	dh_link
+	dh_strip
+	dh_fixperms
+	install -m 4755 br debian/br/usr/local/sbin
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+override_dh_install:
+	dh_install
+	chmod 4755 debian/br/usr/local/sbin/br
+
+# Build architecture-dependent files here.
+binary-arch: build
+
+binary: binary-arch binary-indep
+.PHONY: build clean binary-indep binary-arch binary

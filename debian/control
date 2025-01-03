@@ -1,0 +1,12 @@
+Source: br
+Section: misc
+Priority: optional
+Maintainer: Gratien Dhaese <gratien.dhaese@gmail.com>
+Homepage: https://github.com/gdha/br
+
+Package: br
+Architecture: all
+Provides: br
+Build-Depends: debhelper (>> 5.0.0)
+Depends: binutils
+Description: br - become root if user is a member of the allow_groups array

@@ -32,3 +32,11 @@ rpm: all dist $(PACKAGE).spec man
 		--define "debug_package %{nil}" \
 		--define "_rpmdir %(pwd)" $(PACKAGE)-$(PACKAGE_VERSION).tar.gz
 
+deb: all dist man
+	@echo -e "\033[1m== Building DEB package $(PACKAGE)-$(PACKAGE_VERSION) ==\033[0;0m"
+	chmod 755 debian/rules
+	fakeroot debian/rules clean
+	fakeroot debian/rules build
+	fakeroot debian/rules binary
+	fakeroot dh_install
+	-rm -rf debian/br

@@ -7,7 +7,7 @@ Release: 1%{?dist}
 Summary: Become root
 
 Group: Applications/File
-License: JNJ
+License: GPLv3
 URL: https://sourcecode.jnj.com/projects/SRV-001803/repos/lnxutils/
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
@@ -17,7 +17,8 @@ BuildRequires: autoconf
 #Requires:	
 
 %description
-Become root allowed if you are member of specific group(s) mentioned in br header file
+Become root allowed if you are member of specific group(s) mentioned
+in br.h header file
 
 
 %prep
