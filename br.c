@@ -48,9 +48,15 @@ int main(void) {
     int num_groups;             // Nummer of groups variable
     char user[256];             // Buffer to hold the username
     int result;                 // Contains exit code user lookup
-    struct group grp = {0};     // Group structure to store group details and zero initialize all fields
-    struct group *groupResult;  // Pointer to hold the result of the group lookup
     char buffer[4096];          // Buffer for additional group information
+    struct group grp = {0};     // Group structure to store group details and zero initialize all fields
+    // Pointer groupResult holds the result of the group lookup and it initializes the allocated memory to zero:
+    struct group *groupResult = (struct group *)calloc(1, sizeof(struct group));
+    if (groupResult == NULL) {
+        // Handle allocation failure
+        perror("Memory allocation failed");
+        return 1;
+    }
 
     // Get the number of groups the user is a member of
     num_groups = getgroups(MAX_GROUP_STRINGS, group_list);
