@@ -63,6 +63,7 @@ int main(void) {
 
     if (num_groups == -1) {
         free(groupResult);
+        groupResult = NULL; // This will prevent freeing the same memory again
         perror("getgroups");
         return 1;
     }
@@ -71,6 +72,7 @@ int main(void) {
     result = getlogin_r(user, sizeof(user));
     if (result != 0) {
         free(groupResult);
+        groupResult = NULL; // This will prevent freeing the same memory again
         // Handle errors
         if (result == ERANGE) {
             fprintf(stderr, "Buffer size is too small for username\n");
@@ -95,7 +97,6 @@ int main(void) {
 
         if (grp.gr_mem == NULL) {
            // Handle the error case
-           printf("Group members are NULL\n");
            return 0;
         }
 
