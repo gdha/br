@@ -89,10 +89,8 @@ int main(void) {
         int ret = getgrgid_r(group_list[i], &grp, buffer, sizeof(buffer), &groupResult);
         if (ret != 0) {
             // Handle error
-            free(groupResult);
             perror("getgrgid_r");
-            // continue;
-            return 1;
+            continue;
         }
 
         if (grp.gr_mem == NULL) {
@@ -141,6 +139,7 @@ int main(void) {
     } // of for (i = 0; i < num_groups; i++)
 
     // When you at this point the user was not part of the 'wheel' group so we say:
+    free(groupResult);
     fprintf(stderr,"Not authorized!\n");
     return 1;
 }
