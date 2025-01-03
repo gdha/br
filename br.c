@@ -70,6 +70,7 @@ int main(void) {
     // Get the user's login name
     result = getlogin_r(user, sizeof(user));
     if (result != 0) {
+        free(groupResult);
         // Handle errors
         if (result == ERANGE) {
             fprintf(stderr, "Buffer size is too small for username\n");
@@ -86,15 +87,18 @@ int main(void) {
     for (int i = 0; i < num_groups; i++) {
         // Get group entry by its ID
         int ret = getgrgid_r(group_list[i], &grp, buffer, sizeof(buffer), &groupResult);
-        if (ret == 0) {
-            if (groupResult == NULL) {
-                // No group found for the given GID
-                printf("no group found for GID: %d\n", group_list[i]);
-            }
-        } else {
+        if (ret != 0) {
             // Handle error
+            free(groupResult);
             perror("getgrgid_r");
-            continue;
+            // continue;
+            return 1;
+        }
+
+        if (grp.gr_mem == NULL) {
+           // Handle the error case
+           printf("Group members are NULL\n");
+           return 0;
         }
 
         // Check if the user is a member (member is an username) of the group
@@ -119,7 +123,7 @@ int main(void) {
                         setenv("HOME", "/root", 1);
 
                         // Specify the path to bash
-                        char *path_to_bash = "/bin/bash";
+                        const char *path_to_bash = "/bin/bash";
     
                         // Specify the option to load the .bash_profile
                         char *bash_option = "--login";
