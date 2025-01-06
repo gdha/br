@@ -5,7 +5,7 @@
  *
  * user = your username on the Linux system (most likely non-root) [char]
  * num_groups = the amount of groups the user belongs to [int]
- * numAllowedGroups = amount of groups that allow access to the bash shell with root priveleges [int]
+ * numAllowedGroups = amount of groups that allow access to the bash shell with root privileges [int]
  * member = user account within a certain group
  * allowed_groups array = list the groups listed in the br.h configuration file
  */
@@ -45,7 +45,7 @@ int main(void) {
 
     // Define some variable to contain the group of the RUSER
     gid_t group_list[MAX_GROUP_STRINGS];
-    int num_groups;             // Nummer of groups variable
+    int num_groups;             // Number of groups variable
     char user[256];             // Buffer to hold the username
     int result;                 // Contains exit code user lookup
     char buffer[4096];          // Buffer for additional group information
@@ -119,7 +119,7 @@ int main(void) {
                         // We noticed that TERM=xterm was missing so we define on purpose
                         setenv("TERM", "xterm", 1);
 
-                        // We need to set enviroment HOME to /root
+                        // We need to set environment HOME to /root
                         // However, we noticed that HOME is not defined under root, but when we do exit HOME=/root instead of the user-home
                         setenv("HOME", "/root", 1);
 
