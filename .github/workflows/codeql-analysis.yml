@@ -40,7 +40,7 @@ jobs:
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
     - name: Install build dependencies
-      run: sudo apt-get update && sudo apt-get install -y autoconf automake libtool libltdl-dev
+      run: sudo apt-get update && sudo apt-get install -y autoconf automake libtool libltdl-dev asciidoc xmlto
 
     - name: Run autoheader
       run: autoheader && aclocal && libtoolize --ltdl --copy --force && automake --add-missing --copy && autoconf
