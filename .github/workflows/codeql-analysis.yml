@@ -39,8 +39,20 @@ jobs:
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+    - name: Install build dependencies
+      run: sudo apt-get update && sudo apt-get install -y autoconf automake libtool
+
+    - name: Prepare build system
+      run: autoreconf -i --force
+
+    - name: Configure
+      run: ./configure
+
+    - name: Build
+      run: make
+
+    #- name: Autobuild
+    #  uses: github/codeql-action/autobuild@v3
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
