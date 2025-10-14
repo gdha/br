@@ -1,1 +1,10 @@
 version = 1
+
+
+[[analyzers]]
+name = "c"
+enabled = true
+
+  [analyzers.meta]
+  misra_compliance = true
+  cyclomatic_complexity_threshold = "high"
