@@ -127,7 +127,7 @@ int main(void) {
                         const char *path_to_bash = "/bin/bash";
     
                         // Specify the option to load the .bash_profile
-                        char *bash_option = "--login";
+                        const char *bash_option = "--login";
 
                         // Execute bash with .bash_profile
                         if (execl(path_to_bash, "bash", bash_option, NULL) == -1) {
@@ -141,8 +141,8 @@ int main(void) {
         }  // of while (*members != NULL)
     } // of for (i = 0; i < num_groups; i++)
 
-    // When you at this point the user was not part of the 'wheel' group so we say:
+    // When you at this point the user was not part of the allowed_groups so we say:
     groupResult = NULL;
-    fprintf(stderr,"Not authorized!\n");
+    (void) fprintf(stderr,"Not authorized!\n");
     return 1;
 }
