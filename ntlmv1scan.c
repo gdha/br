@@ -64,10 +64,7 @@ static void inspect_ntlm_payload(const unsigned char *payload, size_t payload_le
 	size_t i;
 	char when[64];
 
-	for (i = 0;
-	     i + ntlm_auth_lm_len_offset + sizeof(uint16_t) <= payload_len &&
-	     i + ntlm_auth_nt_len_offset + sizeof(uint16_t) <= payload_len;
-	     i++) {
+	for (i = 0; i + ntlm_auth_nt_len_offset + sizeof(uint16_t) <= payload_len; i++) {
 		if (memcmp(payload + i, ntlmssp_signature, ntlmssp_signature_len) != 0 ||
 		    read_le32(payload + i + ntlm_auth_message_type_offset) != 3U) {
 			continue;
@@ -90,8 +87,8 @@ static void inspect_ntlm_payload(const unsigned char *payload, size_t payload_le
 			}
 		}
 
-		/* Advance by signature length minus one because the for-loop increments i once more. */
-		i += ntlmssp_signature_len - 1U;
+		/* Skip ahead past the fixed NTLMSSP authenticate header to reduce duplicate re-scans. */
+		i += ntlm_auth_nt_len_offset;
 	}
 }
 
