@@ -1,5 +1,6 @@
 
 AM_CFLAGS                       = -Wall -Wextra -O2
+VERSION                         = $(shell awk -F'"' '/^#define VERSION / {print $$2; exit}' $(srcdir)/br.h)
 
 bin_PROGRAMS                    = br
 br_SOURCES                      = br.c br.h br.8.adoc
@@ -34,6 +35,8 @@ rpm: all dist $(PACKAGE).spec man
 
 deb: all dist man
 	@echo -e "\033[1m== Building DEB package $(PACKAGE)-$(PACKAGE_VERSION) ==\033[0;0m"
+	sed -i -E "s/^Version: .*/Version: $(VERSION)/" debian/br.dsc
+	sed -i -E "s|( br-)[^ ]+(\\.tar\\.gz)|\\1$(VERSION)\\2|" debian/br.dsc
 	chmod 755 debian/rules
 	fakeroot debian/rules clean
 	fakeroot debian/rules build

@@ -1,8 +1,9 @@
 %define rpmrelease %{nil}
 %define bindir /usr/local/sbin
+%global br_version %(awk -F'"' '/^#define VERSION / { print $2; exit }' br.h)
 
 Name: br
-Version: 1.7
+Version: %{br_version}
 Release: 1%{?dist}
 Summary: Become root
 

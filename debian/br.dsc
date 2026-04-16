@@ -1,3 +1,4 @@
+# Keep Version and br-<version>.tar.gz in sync with VERSION in ../br.h.
 Format: 1.0
 Source: br
 Version: 1.7
