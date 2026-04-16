@@ -34,9 +34,9 @@ rpm: all dist $(PACKAGE).spec man
 		--define "debug_package %{nil}" \
 		--define "_rpmdir %(pwd)" $(PACKAGE)-$(PACKAGE_VERSION).tar.gz
 
+# Keep debian/br.dsc version metadata synchronized with br.h VERSION.
 deb: all dist man
 	@echo -e "\033[1m== Building DEB package $(PACKAGE)-$(PACKAGE_VERSION) ==\033[0;0m"
-	# Keep debian/br.dsc version metadata synchronized with br.h VERSION.
 	sed -i -E "s/^Version: .*/Version: $(VERSION)/" debian/br.dsc
 	sed -i -E "s|( br-)[^ ]+(\\.tar\\.gz)|\\1$(VERSION)\\2|" debian/br.dsc
 	chmod 755 debian/rules
