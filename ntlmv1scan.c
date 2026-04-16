@@ -64,7 +64,10 @@ static void inspect_ntlm_payload(const unsigned char *payload, size_t payload_le
 	size_t i;
 	char when[64];
 
-	for (i = 0; i + ntlm_auth_nt_len_offset + sizeof(uint16_t) <= payload_len; i++) {
+	for (i = 0;
+	     i + ntlm_auth_lm_len_offset + sizeof(uint16_t) <= payload_len &&
+	     i + ntlm_auth_nt_len_offset + sizeof(uint16_t) <= payload_len;
+	     i++) {
 		if (memcmp(payload + i, ntlmssp_signature, ntlmssp_signature_len) != 0 ||
 		    read_le32(payload + i + ntlm_auth_message_type_offset) != 3U) {
 			continue;
@@ -74,7 +77,7 @@ static void inspect_ntlm_payload(const unsigned char *payload, size_t payload_le
 			uint16_t lm_response_len = read_le16(payload + i + ntlm_auth_lm_len_offset);
 			uint16_t nt_response_len = read_le16(payload + i + ntlm_auth_nt_len_offset);
 
-			if (nt_response_len == 24U) {
+			if (lm_response_len == 24U && nt_response_len == 24U) {
 				stats->ntlmv1_hits++;
 				format_timestamp(ts, when, sizeof(when));
 				(void)printf(
@@ -87,7 +90,7 @@ static void inspect_ntlm_payload(const unsigned char *payload, size_t payload_le
 			}
 		}
 
-		/* Advance past this signature to continue scanning for additional NTLMSSP messages. */
+		/* Advance by signature length minus one because the for-loop increments i once more. */
 		i += ntlmssp_signature_len - 1U;
 	}
 }
