@@ -124,3 +124,15 @@ $ make rpm
 ## Bug reports
 
 Send mail to the Author(s) - see file AUTHORS
+
+## NTLMv1 scanner utility
+
+This repository now also builds `ntlmv1scan`, a Linux packet scanner that detects potential NTLMv1 authentication traffic in SMB sessions (TCP ports 139/445).
+
+Examples:
+
+```bash
+./ntlmv1scan -i eth0
+./ntlmv1scan -r capture.pcap
+./ntlmv1scan -r capture.pcap -c 1000
+```

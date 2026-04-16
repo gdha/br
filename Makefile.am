@@ -3,9 +3,11 @@ AM_CFLAGS                       = -Wall -Wextra -O2
 # Use $$2 (not $2) because make consumes one $ before invoking awk.
 VERSION                         = $(shell awk -F'"' '/^#define VERSION / {print $$2; exit}' $(srcdir)/br.h)
 
-bin_PROGRAMS                    = br
+bin_PROGRAMS                    = br ntlmv1scan
 br_SOURCES                      = br.c br.h br.8.adoc
 br_LDADD                        =
+ntlmv1scan_SOURCES              = ntlmv1scan.c
+ntlmv1scan_LDADD                = -lpcap
 dist_man_MANS                   = br.8
 ACLOCAL_AMFLAGS                 = -I libltdl/m4
 EXTRA_DIST                      = br.spec
