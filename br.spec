@@ -2,7 +2,7 @@
 %define bindir /usr/local/sbin
 
 Name: br
-Version: 1.6
+Version: 1.7
 Release: 1%{?dist}
 Summary: Become root
 
@@ -55,17 +55,5 @@ chmod 0644 %{buildroot}%{_mandir}/man8/%{name}.8.gz
 
 
 %changelog
-* Tue Jun 11 2024 Gratien D'haese (gdhaese1 @ its.jnj.com) - 1.6-1
-- fix typo in gtscconf -> gtsccon
-* Thu Jun  6 2024 Gratien D'haese (gdhaese1 @ its.jnj.com) - 1.5-1
-- fix infinite loop in certain cases
-* Fri Apr 12 2024 Gratien D'haese (gdhaese1 @ its.jnj.com) - 1.4-1
-- add header file br.h containing allow_groups array
-* Wed Mar 27 2024 Gratien D'haese (gdhaese1 @ its.jnj.com) - 1.3-1
-- add setenv HOME and granted 'gtsccon' group
-* Sat Mar  2 2024 Gratien D'haese (gdhaese1 @ its.jnj.com) - 1.2-1
-- added setenv TERM
-* Fri Mar  1 2024 Gratien D'haese (gdhaese1 @ its.jnj.com) - 1.1-1
-- improved code with error checks and added 'wheel' group check
-* Wed Feb 28 2024 Gratien D'haese (gdhaese1 @ its.jnj.com) - 1.0-1
-- initial release (quick & dirty)
+* Thu Apr 16 2026 Gratien D'haese (gratien.dhaese @ gmail.com) - 1.7-1
+- fix typo
