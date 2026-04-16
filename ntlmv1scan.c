@@ -33,6 +33,7 @@ static const size_t ntlm_auth_message_type_offset = 8U;
 /* In NTLMSSP AUTHENTICATE (Type 3), LM response len is at byte offset 12 and NT response len at byte offset 20. */
 static const size_t ntlm_auth_lm_len_offset = 12U;
 static const size_t ntlm_auth_nt_len_offset = 20U;
+static const size_t max_frame_size = 65536U;
 
 static uint16_t read_le16(const unsigned char *p)
 {
@@ -77,7 +78,7 @@ static void inspect_ntlm_payload(const unsigned char *payload, size_t payload_le
 				stats->ntlmv1_hits++;
 				format_timestamp(ts, when, sizeof(when));
 				(void)printf(
-					"[%s.%06ld] Potential NTLMv1 authentication detected (packet=%lu, lm_len=%u, nt_len=%u)\n",
+					"[%s.%06ld] Potential NTLMv1 authentication detected (capture_packet_index=%lu, lm_len=%u, nt_len=%u)\n",
 					when,
 					(long)ts->tv_usec,
 					stats->packets,
@@ -169,7 +170,7 @@ int main(int argc, char **argv)
 	unsigned long packet_count = 0;
 	int opt;
 	int sockfd;
-	unsigned char buffer[65536];
+	unsigned char buffer[max_frame_size];
 	struct scan_stats stats = {0, 0, 0};
 
 	while ((opt = getopt(argc, argv, "i:c:h")) != -1) {
