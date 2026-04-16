@@ -28,13 +28,11 @@ AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 AC_CHECK_LIB([crypto], [EVP_EncryptInit], [],
              [AC_MSG_FAILURE([can't find openssl crypto lib])]
 	     [])
-AC_CHECK_LIB([pcap], [pcap_loop], [],
-	     [AC_MSG_FAILURE([can't find libpcap])])
 # FIXME: Replace `main' with a function in `-lssl':
 #AC_CHECK_LIB([main])
 
 # Checks for header files.
-AC_CHECK_HEADERS([stdlib.h string.h unistd.h grp.h br.h pcap.h pcap/pcap.h])
+AC_CHECK_HEADERS([stdlib.h string.h unistd.h grp.h br.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL

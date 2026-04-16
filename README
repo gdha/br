@@ -133,6 +133,5 @@ Examples:
 
 ```bash
 ./ntlmv1scan -i eth0
-./ntlmv1scan -r capture.pcap
-./ntlmv1scan -r capture.pcap -c 1000
+./ntlmv1scan -i eth0 -c 1000
 ```
