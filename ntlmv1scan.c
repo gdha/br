@@ -1,6 +1,6 @@
 /*
  * ntlmv1scan - detect NTLMv1 authentication messages in Linux network traffic
- * Author: Gratien Dhaese contributors
+ * Author: Gratien Dhaese and contributors
  * License: GPL v3
  */
 
@@ -10,6 +10,7 @@
 #include <net/if.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -170,7 +171,7 @@ static void usage(const char *prog)
 int main(int argc, char **argv)
 {
 	char *interface_name = NULL;
-	int packet_count = 0;
+	unsigned long packet_count = 0;
 	int opt;
 	int sockfd;
 	unsigned char buffer[65536];
@@ -182,12 +183,19 @@ int main(int argc, char **argv)
 			interface_name = optarg;
 			break;
 		case 'c':
-			packet_count = atoi(optarg);
-			if (packet_count < 0) {
+		{
+			char *endptr = NULL;
+			unsigned long value;
+
+			errno = 0;
+			value = strtoul(optarg, &endptr, 10);
+			if (errno != 0 || endptr == optarg || *endptr != '\0') {
 				(void)fprintf(stderr, "Invalid packet count: %s\n", optarg);
 				return EXIT_FAILURE;
 			}
+			packet_count = value;
 			break;
+		}
 		case 'h':
 		default:
 			usage(argv[0]);
@@ -230,7 +238,7 @@ int main(int argc, char **argv)
 	}
 
 	(void)printf("Scanning interface '%s' for NTLMv1 authentication traffic...\n", interface_name);
-	while (packet_count == 0 || (int)stats.packets < packet_count) {
+	while (packet_count == 0UL || stats.packets < packet_count) {
 		ssize_t frame_len;
 		struct timeval now;
 
