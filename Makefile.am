@@ -23,6 +23,12 @@ br.8.xml: br.8.adoc
 
 br.8: br.8.xml
 	xmlto man $<
+else
+man:
+	@test -f br.8 || { \
+		echo "error: br.8 is missing and asciidoc/xmlto are unavailable to rebuild it"; \
+		exit 1; \
+	}
 endif
 # end of USE_ASCIIDOC
 
