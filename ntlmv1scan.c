@@ -61,7 +61,6 @@ static void format_timestamp(const struct timeval *ts, char *buffer, size_t buff
 static void inspect_ntlm_payload(const unsigned char *payload, size_t payload_len, const struct timeval *ts, struct scan_stats *stats)
 {
 	size_t i;
-	const size_t min_auth_size = 28;
 	char when[64];
 
 	for (i = 0; i + ntlm_auth_nt_len_offset + sizeof(uint16_t) <= payload_len; i++) {
@@ -70,7 +69,7 @@ static void inspect_ntlm_payload(const unsigned char *payload, size_t payload_le
 			continue;
 		}
 		stats->ntlm_auth_messages++;
-		if (i + min_auth_size <= payload_len) {
+		{
 			uint16_t lm_response_len = read_le16(payload + i + ntlm_auth_lm_len_offset);
 			uint16_t nt_response_len = read_le16(payload + i + ntlm_auth_nt_len_offset);
 
@@ -239,10 +238,13 @@ int main(int argc, char **argv)
 		struct timeval now;
 
 		frame_len = recvfrom(sockfd, buffer, sizeof(buffer), 0, NULL, NULL);
-		if (frame_len <= 0) {
+		if (frame_len < 0) {
 			perror("recvfrom");
 			close(sockfd);
 			return EXIT_FAILURE;
+		}
+		if (frame_len == 0) {
+			continue;
 		}
 
 		stats.packets++;
