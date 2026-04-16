@@ -3,10 +3,9 @@ AM_CFLAGS                       = -Wall -Wextra -O2
 # Use $$2 (not $2) because make consumes one $ before invoking awk.
 VERSION                         = $(shell awk -F'"' '/^#define VERSION / {print $$2; exit}' $(srcdir)/br.h)
 
-bin_PROGRAMS                    = br ntlmv1scan
+bin_PROGRAMS                    = br
 br_SOURCES                      = br.c br.h br.8.adoc
 br_LDADD                        =
-ntlmv1scan_SOURCES              = ntlmv1scan.c
 dist_man_MANS                   = br.8
 ACLOCAL_AMFLAGS                 = -I libltdl/m4
 EXTRA_DIST                      = br.spec
@@ -24,6 +23,12 @@ br.8.xml: br.8.adoc
 
 br.8: br.8.xml
 	xmlto man $<
+else
+man:
+	@test -f br.8 || { \
+		echo "error: br.8 is missing and asciidoc/xmlto are unavailable to rebuild it"; \
+		exit 1; \
+	}
 endif
 # end of USE_ASCIIDOC
 
@@ -35,9 +40,9 @@ rpm: all dist $(PACKAGE).spec man
 		--define "debug_package %{nil}" \
 		--define "_rpmdir %(pwd)" $(PACKAGE)-$(PACKAGE_VERSION).tar.gz
 
+# Keep debian/br.dsc version metadata synchronized with br.h VERSION.
 deb: all dist man
 	@echo -e "\033[1m== Building DEB package $(PACKAGE)-$(PACKAGE_VERSION) ==\033[0;0m"
-	# Keep debian/br.dsc version metadata synchronized with br.h VERSION.
 	sed -i -E "s/^Version: .*/Version: $(VERSION)/" debian/br.dsc
 	sed -i -E "s|( br-)[^ ]+(\\.tar\\.gz)|\\1$(VERSION)\\2|" debian/br.dsc
 	chmod 755 debian/rules
