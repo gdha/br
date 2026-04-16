@@ -28,6 +28,11 @@ struct scan_stats {
 };
 
 static const unsigned char ntlmssp_signature[] = "NTLMSSP\0";
+static const size_t ntlmssp_signature_len = 8U;
+static const size_t ntlm_auth_message_type_offset = 8U;
+/* In NTLMSSP AUTHENTICATE (Type 3), LM response len is at byte offset 12 and NT response len at byte offset 20. */
+static const size_t ntlm_auth_lm_len_offset = 12U;
+static const size_t ntlm_auth_nt_len_offset = 20U;
 
 static uint16_t read_le16(const unsigned char *p)
 {
@@ -55,29 +60,19 @@ static void format_timestamp(const struct timeval *ts, char *buffer, size_t buff
 
 static void inspect_ntlm_payload(const unsigned char *payload, size_t payload_len, const struct timeval *ts, struct scan_stats *stats)
 {
-	size_t start = 0;
+	size_t i;
 	const size_t min_auth_size = 28;
 	char when[64];
 
-	while (start + 12 <= payload_len) {
-		size_t i;
-		int found = 0;
-
-		for (i = start; i + 12 <= payload_len; i++) {
-			if (memcmp(payload + i, ntlmssp_signature, 8) == 0 && read_le32(payload + i + 8) == 3U) {
-				found = 1;
-				break;
-			}
+	for (i = 0; i + ntlm_auth_nt_len_offset + sizeof(uint16_t) <= payload_len; i++) {
+		if (memcmp(payload + i, ntlmssp_signature, ntlmssp_signature_len) != 0 ||
+		    read_le32(payload + i + ntlm_auth_message_type_offset) != 3U) {
+			continue;
 		}
-
-		if (!found) {
-			break;
-		}
-
 		stats->ntlm_auth_messages++;
 		if (i + min_auth_size <= payload_len) {
-			uint16_t lm_response_len = read_le16(payload + i + 12);
-			uint16_t nt_response_len = read_le16(payload + i + 20);
+			uint16_t lm_response_len = read_le16(payload + i + ntlm_auth_lm_len_offset);
+			uint16_t nt_response_len = read_le16(payload + i + ntlm_auth_nt_len_offset);
 
 			if (nt_response_len == 24U) {
 				stats->ntlmv1_hits++;
@@ -92,7 +87,8 @@ static void inspect_ntlm_payload(const unsigned char *payload, size_t payload_le
 			}
 		}
 
-		start = i + 8;
+		/* Advance past this signature to continue scanning for additional NTLMSSP messages. */
+		i += ntlmssp_signature_len - 1U;
 	}
 }
 
