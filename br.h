@@ -5,7 +5,7 @@
 #ifndef BR_HEADER_H
 #define BR_HEADER_H
 
-#define VERSION "1.7"
+#define VERSION "1.8"
 #define MAX_GROUP_STRINGS 15   /* Maximum number of strings in the array */
 #define MAX_STR_LEN 20         /* Maximum length of each string */
 char allowed_groups[MAX_GROUP_STRINGS][MAX_STR_LEN] = {
