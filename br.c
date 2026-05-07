@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <grp.h>
+#include <pwd.h>
 #include <string.h>
 #include <errno.h>
 #include "br.h"
@@ -29,7 +30,7 @@ int countStrings(char allowedGroups[][MAX_STR_LEN], int maxNumStrings) {
         if (allowedGroups[i][0] == '\0') {
             break;
         }
-	count++;
+        count++;
     }
 
     return count;
@@ -37,112 +38,84 @@ int countStrings(char allowedGroups[][MAX_STR_LEN], int maxNumStrings) {
 
 int main(void) {
 
-    // Set the UID to root (0)
-    if (setuid(0) == -1) {
-       perror("setuid to 0 fails");
-       exit(EXIT_FAILURE);
-    }
-
     // Define some variable to contain the group of the RUSER
     gid_t group_list[MAX_GROUP_STRINGS];
     int num_groups;             // Number of groups variable
-    char user[256];             // Buffer to hold the username
-    int result;                 // Contains exit code user lookup
     char buffer[4096];          // Buffer for additional group information
     struct group grp = {0};     // Group structure to store group details and zero initialize all fields
-    // Pointer groupResult holds the result of the group lookup and it initializes the allocated memory to zero:
-    struct group *groupResult = (struct group *)calloc(1, sizeof(struct group));
-    if (groupResult == NULL) {
-        // Handle allocation failure
-        perror("Memory allocation failed");
+    struct group *groupResult = NULL;
+
+    // Get the real username from the real UID — cannot be spoofed unlike getlogin_r()
+    struct passwd *pw = getpwuid(getuid());
+    if (pw == NULL) {
+        fprintf(stderr, "Failed to look up user for UID %d\n", (int)getuid());
         return 1;
     }
+    const char *user = pw->pw_name;
 
-    // Get the number of groups the user is a member of
+    // Get the number of supplementary groups the process belongs to
     num_groups = getgroups(MAX_GROUP_STRINGS, group_list);
-
     if (num_groups == -1) {
-        free(groupResult);
-        groupResult = NULL; // This will prevent freeing the same memory again
         perror("getgroups");
         return 1;
-    }
-
-    // Get the user's login name
-    result = getlogin_r(user, sizeof(user));
-    if (result != 0) {
-        free(groupResult);
-        groupResult = NULL; // This will prevent freeing the same memory again
-        // Handle errors
-        if (result == ERANGE) {
-            fprintf(stderr, "Buffer size is too small for username\n");
-        } else {
-            perror("getlogin_r");
-            return 1;
-        }
     }
 
     // Count the amount of listed groups in the allowed_groups array (see br.h header file)
     int numAllowedGroups = countStrings(allowed_groups, MAX_GROUP_STRINGS);
 
-    // Iterate over each group the user is member of to check if the user belongs to it
+    // Iterate over each group the process belongs to
     for (int i = 0; i < num_groups; i++) {
-        // Get group entry by its ID
+        // Get group entry by its GID
         int ret = getgrgid_r(group_list[i], &grp, buffer, sizeof(buffer), &groupResult);
         if (ret != 0) {
-            // Handle error
             perror("getgrgid_r");
             continue;
         }
-
-        if (grp.gr_mem == NULL) {
-           // Handle the error case
-           free(groupResult);
-           groupResult = NULL; // This will prevent freeing the same memory again
-           return 0;
+        if (groupResult == NULL) {
+            continue;
         }
 
-        // Check if the user is a member (member is an username) of the group
-        char **members = grp.gr_mem;
+        // Check if this group is in the allowed_groups list
+        for (int igrp = 0; igrp < numAllowedGroups; igrp++) {
+            if (strcmp(grp.gr_name, allowed_groups[igrp]) == 0) {
+                // User's process is a member of an allowed group — proceed to elevate
+                printf("%s is a member of group %s (gid: %d) and allowed access.\n\n",
+                       user, grp.gr_name, grp.gr_gid);
 
-        while (*members != NULL) {
+                // Elevate to root only after authorization is confirmed
+                if (setuid(0) == -1) {
+                    perror("setuid to 0 fails");
+                    exit(EXIT_FAILURE);
+                }
 
-            if (strcmp(*members, user) == 0) {
-		// igrp is an integer counter used for the amount of strings in array allowed_groups
-		for (int igrp = 0; igrp < numAllowedGroups; igrp++) {
-                    if (strcmp(grp.gr_name, allowed_groups[igrp]) == 0)  {
-                        // User is part of the 'wheel' group and is allowed to proceed
-                        printf("%s is a member of group %s (gid: %d) and allowed access.\n\n", user, grp.gr_name, grp.gr_gid);
+                // Clear the environment to prevent environment variable attacks
+                // environ = NULL is used for portability (clearenv is GNU-specific)
+                extern char **environ;
+                environ = NULL;
 
-                        // Clear the environment
-                        clearenv();
-                        // We noticed that TERM=xterm was missing so we define on purpose
-                        setenv("TERM", "xterm", 1);
+                // Restore a safe, minimal environment for the root shell
+                setenv("TERM",    "xterm", 1);
+                setenv("HOME",    "/root", 1);
+                setenv("USER",    "root",  1);
+                setenv("LOGNAME", "root",  1);
+                setenv("PATH",    "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
 
-                        // We need to set environment HOME to /root
-                        // However, we noticed that HOME is not defined under root, but when we do exit HOME=/root instead of the user-home
-                        setenv("HOME", "/root", 1);
+                // Specify the path to bash
+                const char *path_to_bash = "/bin/bash";
 
-                        // Specify the path to bash
-                        const char *path_to_bash = "/bin/bash";
-    
-                        // Specify the option to load the .bash_profile
-                        const char *bash_option = "--login";
+                // Specify the option to load the .bash_profile
+                const char *bash_option = "--login";
 
-                        // Execute bash with .bash_profile
-                        if (execl(path_to_bash, "bash", bash_option, NULL) == -1) {
-                            perror("execl");
-                            exit(EXIT_FAILURE);
-                        }
-                    } // end of if (strcmp(grp->gr_name, allowed_groups[igrp])
-                } // end of for (int igrp = 0; igrp < numAllowedGroups; igrp++)
-	    } // end of if (strcmp(*members, user) == 0)
-            members++;
-        }  // of while (*members != NULL)
-    } // of for (i = 0; i < num_groups; i++)
+                // Execute bash with .bash_profile
+                if (execl(path_to_bash, "bash", bash_option, NULL) == -1) {
+                    perror("execl");
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
+    }
 
-    // When you at this point the user was not part of the allowed_groups so we say:
-    groupResult = NULL;
-    (void) fprintf(stderr,"Not authorized!\n");
+    // User was not part of any allowed group
+    fprintf(stderr, "Not authorized!\n");
     return 1;
 }
